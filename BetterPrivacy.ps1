@@ -157,6 +157,11 @@ $window.btnRun.add_Click(
             ForEach ($btn in $btns) {
                 $window.$btn.IsEnabled = $false
             }
+			If ([Environment]::OSVersion.Version.Major -ne 10) {
+                WriteOutput "your operating system ($((Get-WmiObject -Class Win32_OperatingSystem).Caption)) is not supported"
+                WriteOutput "please take a look at the system requirements stated in the README.md file"
+                Throw
+			}
             If ($($window.chkDisableServices.IsChecked) -eq $true -and $($window.txtDisableServices.Text.Replace("`r`n","")) -ne "") {
 				$services = New-Object System.Collections.ArrayList
 				(($window.txtDisableServices.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $services.Add($_) }

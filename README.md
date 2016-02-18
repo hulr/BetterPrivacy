@@ -13,7 +13,6 @@ With this script you can do the following to improve your privacy on Windows 10 
 
 ## System requirements
 * Windows 10
-* Windows PowerShell 5
 * Administrator Account (self-elevating, no need to start as admin)
 * Display resolution: 500x1100
 
