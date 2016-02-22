@@ -1,5 +1,5 @@
 @echo off
-ver | find "Version 10." > nul
+ver | find "10." > nul
 if %ERRORLEVEL% == 0 (
 powershell.exe -executionpolicy bypass -file BetterPrivacy.ps1
 ) else (
