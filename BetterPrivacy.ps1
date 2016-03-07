@@ -41,6 +41,7 @@ $log = "$PSScriptRoot\BetterPrivacy.log"
         <CheckBox Name="chktcClearDiagTrackLog" Content="clear diagtrack log" HorizontalAlignment="Left" Margin="851,245,0,0" VerticalAlignment="Top" Height="15" Width="215" IsEnabled="{Binding ElementName=chkTelemetry, Path=IsChecked}"/>
         <CheckBox Name="chktcDisableSyncOfSettings" Content="disable sync of settings" HorizontalAlignment="Left" Margin="851,265,0,0" VerticalAlignment="Top" Height="15" Width="215" IsEnabled="{Binding ElementName=chkTelemetry, Path=IsChecked}"/>
         <CheckBox Name="chktcDisableLocationSensor" Content="disable location sensor" HorizontalAlignment="Left" Margin="851,285,0,0" VerticalAlignment="Top" Height="15" Width="215" IsEnabled="{Binding ElementName=chkTelemetry, Path=IsChecked}"/>
+        <CheckBox Name="chktcUninstallOneDrive" Content="uninstall onedrive" HorizontalAlignment="Left" Margin="851,305,0,0" VerticalAlignment="Top" Height="15" Width="215" IsEnabled="{Binding ElementName=chkTelemetry, Path=IsChecked}"/>
         <TextBox Name="txtOutput" HorizontalAlignment="Left" Height="93" Margin="10,356,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="953" RenderTransformOrigin="1.458,0.696" VerticalScrollBarVisibility="Auto"/>
         <Label Name="lblOutput" Content="output" HorizontalAlignment="Left" Margin="10,330,0,0" VerticalAlignment="Top" Width="79" Height="26"/>
         <Button Name="btnReset" Content="reset" HorizontalAlignment="Left" Margin="978,356,0,0" VerticalAlignment="Top" Width="98" Height="40" FontWeight="Bold" RenderTransformOrigin="0.5,-0.1"/>
@@ -303,6 +304,43 @@ $window.btnRun.add_Click(
                     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Permissions" -Name "{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Permissions\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Value 0 -Force
                     WriteOutput "disabled location sensor"
+                }
+                If ($($window.chktcUninstallOneDrive.IsChecked) -eq $true) {
+                    If (Test-Path "$env:SystemRoot\System32\OneDriveSetup.exe") {
+                        & "$env:SystemRoot\System32\OneDriveSetup.exe" /uninstall
+                    }
+                    If (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
+                        & "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" /uninstall
+                    }
+                    $items = @(
+                        "$env:LOCALAPPDATA\Microsoft\OneDrive"
+                        "$env:ProgramData\Microsoft OneDrive"
+                        "$env:USERPROFILE\OneDrive"
+                        "$env:SystemDrive\OneDriveTemp"
+                    )
+                    ForEach ($item in $items) {
+                        Remove-Item -Recurse $item -Force -ErrorAction SilentlyContinue
+                    }
+                    New-PSDrive -PSProvider Registry -Root "HKEY_CLASSES_ROOT" -Name "HKCR"
+                    $newitems = @(
+                        ("HKLM:\Software\Policies\Microsoft\Windows","OneDrive"),
+                        ("HKCR:\CLSID","{018D5C66-4533-4307-9B53-224DE2ED1FE6}"),
+                        ("HKCR:\Wow6432Node\CLSID","{018D5C66-4533-4307-9B53-224DE2ED1FE6}")
+                    )
+                    ForEach ($newitem in $newitems) {
+                            New-Item -Path $newitem[0] -Name $newitem[1] -Force
+                    }
+                    $newitemproperties = @(
+                        ("HKLM:\Software\Policies\Microsoft\Windows\OneDrive","DisableFileSyncNGSC",1),
+                        ("HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}","System.IsPinnedToNameSpaceTree",0),
+                        ("HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}","System.IsPinnedToNameSpaceTree",0)
+                    )
+                    ForEach ($newitemproperty in $newitemproperties) {
+                        New-ItemProperty -Path $newitemproperty[0] -Name $newitemproperty[1] -Value $newitemproperty[2] -Force
+                    }
+                    Remove-PSDrive "HKCR"
+                    Remove-Item "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.Ink" -Force -ErrorAction SilentlyContinue
+                    WriteOutput "uninstalled onedrive"
                 }
 				$chkboxes = $window.Content.Children.Name -Like "chktc*"
                 ForEach ($chkbox in $chkboxes) {

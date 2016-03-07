@@ -5,11 +5,12 @@ for Windows 10
 With this script you can do the following to improve your privacy on Windows 10 computers:
 * Disable services
 * Remove apps
+* Uninstall OneDrive
 * Block telemetry domains
 * Block telemetry IPs
 * Change general privacy settings
 
-![BetterPrivacy](http://i.imgur.com/nVCRt33.png)
+![BetterPrivacy](http://i.imgur.com/DIFrgVL.png)
 
 ## System requirements
 * Windows 10
