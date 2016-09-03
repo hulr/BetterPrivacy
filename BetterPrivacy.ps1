@@ -1,9 +1,9 @@
 #region privileges
-If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
 {
-$arguments = "-ExecutionPolicy Bypass & '" + $MyInvocation.MyCommand.Definition + "'"
+$arguments = "-executionpolicy bypass & '" + $MyInvocation.MyCommand.Definition + "'"
 Start-Process powershell -Verb runAs -WindowStyle Hidden -ArgumentList $arguments
-Break
+break
 }
 #endregion
 
@@ -16,13 +16,13 @@ $log = "$PSScriptRoot\BetterPrivacy.log"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Name="window" Title="BetterPrivacy" WindowStartupLocation ="CenterScreen"
-		Height="500" Width="1100">
+        Height="500" Width="1100">
     <Grid>
         <TextBox Name="txtDisableServices" HorizontalAlignment="Left" Height="299" Margin="10,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding ElementName=chkDisableServices, Path=IsChecked}" AcceptsReturn="True"/>
         <CheckBox Name="chkDisableServices" Content="disable services" HorizontalAlignment="Left" Margin="10,16,0,0" VerticalAlignment="Top" Width="150" Height="15"/>
         <TextBox Name="txtRemoveApps" HorizontalAlignment="Left" Height="299" Margin="175,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding ElementName=chkRemoveApps, Path=IsChecked}" AcceptsReturn="True"/>
         <CheckBox Name="chkRemoveApps" Content="remove apps" HorizontalAlignment="Left" Margin="175,16,0,0" VerticalAlignment="Top" Width="150" Height="15"/>
-		<TextBox Name="txtBlockDomains" HorizontalAlignment="Left" Height="299" Margin="417,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="284" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding ElementName=chkBlockDomains, Path=IsChecked}" AcceptsReturn="True"/>
+        <TextBox Name="txtBlockDomains" HorizontalAlignment="Left" Height="299" Margin="417,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="284" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding ElementName=chkBlockDomains, Path=IsChecked}" AcceptsReturn="True"/>
         <CheckBox Name="chkBlockDomains" Content="block domains" HorizontalAlignment="Left" Margin="417,16,0,0" VerticalAlignment="Top" Width="174" Height="15"/>
         <TextBox Name="txtBlockIPs" HorizontalAlignment="Left" Height="299" Margin="706,31,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="129" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding ElementName=chkBlockIPs, Path=IsChecked}" AcceptsReturn="True"/>
         <CheckBox Name="chkBlockIPs" Content="block ips" HorizontalAlignment="Left" Margin="706,16,0,0" VerticalAlignment="Top" Width="150" Height="15"/>
@@ -51,13 +51,13 @@ $log = "$PSScriptRoot\BetterPrivacy.log"
 '@
 $reader=(New-Object System.Xml.XmlNodeReader $xaml)
 $window=[Windows.Markup.XamlReader]::Load($reader)
-ForEach($name in $window.Content.Children.Name) {
+foreach ($name in $window.Content.Children.Name) {
     $window | Add-Member NoteProperty -Name $name -Value $window.FindName($name) -Force
 }
 #endregion
 
 #region functions
-Function WriteOutput($msg) {
+function WriteOutput($msg) {
     $ps = [powershell]::create()
     $ps.Runspace.SessionStateProxy.SetVariable("window", $window)
     $ps.Runspace.SessionStateProxy.SetVariable("msg", $msg)
@@ -74,13 +74,13 @@ Function WriteOutput($msg) {
     $ps.Dispose()
 }
 
-Function LoadDefaultValues {
+function LoadDefaultValues {
     $txtboxes = $window.Content.Children.Name -Like "txt*"
-    ForEach ($txtbox in $txtboxes) {
+    foreach ($txtbox in $txtboxes) {
         $window.$txtbox.Text = ""
     }
     $chkboxes = $window.Content.Children.Name -Like "chk*"
-    ForEach ($chkbox in $chkboxes) {
+    foreach ($chkbox in $chkboxes) {
         $window.$chkbox.IsChecked = $false
     }
 	$services = $conf.service
@@ -109,10 +109,10 @@ Function LoadDefaultValues {
 #region main
 $window.Add_Loaded(
 	{
-		Try {
+		try {
 			LoadDefaultValues
 		}
-		Catch {
+		catch {
 			WriteOutput $($_.Exception.Message)
 		}
 	}
@@ -120,10 +120,10 @@ $window.Add_Loaded(
 
 $window.btnReset.add_Click(
 	{
-		Try {
+		try {
 			LoadDefaultValues
 		}
-		Catch {
+		catch {
 			WriteOutput $($_.Exception.Message)
 		}
 	}
@@ -131,20 +131,20 @@ $window.btnReset.add_Click(
 
 $window.chkTelemetry.add_Click(
     {
-        Try {
-            If ($window.chkTelemetry.IsChecked -eq $true) {
+        try {
+            if ($window.chkTelemetry.IsChecked -eq $true) {
                 $chkboxes = $window.Content.Children.Name -Like "chktc*"
-                ForEach ($chkbox in $chkboxes) {
+                foreach ($chkbox in $chkboxes) {
                     $window.$chkbox.IsChecked = $true
                 }
-            } ElseIf ($window.chkTelemetry.IsChecked -eq $false) {
+            } elseif ($window.chkTelemetry.IsChecked -eq $false) {
                 $chkboxes = $window.Content.Children.Name -Like "chktc*"
-                ForEach ($chkbox in $chkboxes) {
+                foreach ($chkbox in $chkboxes) {
                     $window.$chkbox.IsChecked = $false
                 }
             }
         }
-        Catch {
+        catch {
             WriteOutput $($_.Exception.Message)
         }
     }
@@ -152,21 +152,21 @@ $window.chkTelemetry.add_Click(
 
 $window.btnRun.add_Click(
     {
-        Try {
+        try {
             WriteOutput "start"
             $btns = $window.Content.Children.Name -Like "btn*"
-            ForEach ($btn in $btns) {
+            foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $false
             }
-			If ([Environment]::OSVersion.Version.Major -ne 10) {
+			if ([Environment]::OSVersion.Version.Major -ne 10) {
                 WriteOutput "your operating system ($((Get-WmiObject -Class Win32_OperatingSystem).Caption)) is not supported"
                 WriteOutput "please take a look at the system requirements stated in the README.md file"
-                Throw
+                throw
 			}
-            If ($($window.chkDisableServices.IsChecked) -eq $true -and $($window.txtDisableServices.Text.Replace("`r`n","")) -ne "") {
+            if ($($window.chkDisableServices.IsChecked) -eq $true -and $($window.txtDisableServices.Text.Replace("`r`n","")) -ne "") {
 				$services = New-Object System.Collections.ArrayList
 				(($window.txtDisableServices.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $services.Add($_) }
-                ForEach ($service in $services) {
+                foreach ($service in $services) {
                     $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                     if ($svc) {
                         if ($svc.Status -eq "Running") {
@@ -174,81 +174,81 @@ $window.btnRun.add_Click(
                         }
                         Set-Service -Name $service -StartupType Disabled
                         WriteOutput "disabled service $($service)"
-                    } Else {
+                    } else {
                         WriteOutput "could not find service $($service)"
                     }
                 }
-            } Else {
+            } else {
                 WriteOutput "you have not configured any services to disable"
             }
-            If ($($window.chkRemoveApps.IsChecked) -eq $true -and $($window.txtRemoveApps.Text.Replace("`r`n","")) -ne "") {
+            if ($($window.chkRemoveApps.IsChecked) -eq $true -and $($window.txtRemoveApps.Text.Replace("`r`n","")) -ne "") {
 				$apps = New-Object System.Collections.ArrayList
 				(($window.txtRemoveApps.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $apps.Add($_) }
-                ForEach ($app in $apps) {
+                foreach ($app in $apps) {
                     $a = Get-AppxPackage -Name $app -ErrorAction SilentlyContinue
-                    If ($a) {
+                    if ($a) {
                         Get-AppxPackage -Name $app -AllUsers | Remove-AppxPackage -ErrorAction SilentlyContinue
                         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq $app | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
                         WriteOutput "removed app $($app)"
-                    } Else {
+                    } else {
                         WriteOutput "could not find app $($app)"
                     }
                 }
-            } Else {
+            } else {
                 WriteOutput "you have not configured any apps to remove"
             }
-            If ($($window.chkBlockDomains.IsChecked) -eq $true -and $($window.txtBlockDomains.Text.Replace("`r`n","")) -ne "") {
+            if ($($window.chkBlockDomains.IsChecked) -eq $true -and $($window.txtBlockDomains.Text.Replace("`r`n","")) -ne "") {
 				$domains = New-Object System.Collections.ArrayList
 				(($window.txtBlockDomains.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $domains.Add($_) }
                 $hosts = "$env:SystemRoot\System32\drivers\etc\hosts"
-                ForEach ($domain in $domains) {
-	                If (-Not (Select-String -Path $hosts -Pattern "^0.0.0.0 $($domain)$")) {
+                foreach ($domain in $domains) {
+	                if (-Not (Select-String -Path $hosts -Pattern "^0.0.0.0 $($domain)$")) {
 		                Write-Output "0.0.0.0 $domain" | Out-File -Encoding ASCII -Append $hosts
 	                    WriteOutput "blocked domain $($domain)"
-                    } Else {
+                    } else {
                         WriteOutput "could not block domain $($domain), already set in hosts file"
                     }
                 }
-            } Else {
+            } else {
                 WriteOutput "you have not configured any domains to block"
             }
-            If ($($window.chkBlockIPs.IsChecked) -eq $true -and $($window.txtBlockIPs.Text.Replace("`r`n","")) -ne "") {
+            if ($($window.chkBlockIPs.IsChecked) -eq $true -and $($window.txtBlockIPs.Text.Replace("`r`n","")) -ne "") {
 				$ips = New-Object System.Collections.ArrayList
                 (($window.txtBlockIPs.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $ips.Add($_) }
-                ForEach ($ip in $ips) {
+                foreach ($ip in $ips) {
                     Remove-NetFirewallRule -DisplayName "BlockTelemetryIP-$($ip)" -ErrorAction SilentlyContinue
                     New-NetFirewallRule -DisplayName "BlockTelemetryIP-$($ip)" -Direction Outbound -Action Block -RemoteAddress $ip
                     WriteOutput "blocked ip $($ip)"
                 }
-            } Else {
+            } else {
                 WriteOutput "you have not configured any ips to block"
             }
-            If ($($window.chkTelemetry.IsChecked) -eq $true) {
-                If ($($window.chktcTurnOffOneDriveFileSync.IsChecked) -eq $true) {
+            if ($($window.chkTelemetry.IsChecked) -eq $true) {
+                if ($($window.chktcTurnOffOneDriveFileSync.IsChecked) -eq $true) {
                     New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows" -Name "OneDrive" -Force
                     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Value 1 -Force
                     WriteOutput "turned off one drive file sync"
                 }
-                If ($($window.chktcTurnOffAdvertisingId.IsChecked) -eq $true) {
+                if ($($window.chktcTurnOffAdvertisingId.IsChecked) -eq $true) {
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\windows\CurrentVersion" -Name "AdvertisingInfo" -Value 0 -Force
                     WriteOutput "turned off advertising id"
                 }
-                If ($($window.chktcTurnOffSmartScreenFilter.IsChecked) -eq $true) {
+                if ($($window.chktcTurnOffSmartScreenFilter.IsChecked) -eq $true) {
                     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebcontentEvaluation" -Force
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost\EnableWebContentEvaluation" -Name "Enabled" -Value 0 -Force
                     WriteOutput "turned off smartscreen filter"
                 }
-                If ($($window.chktcPreventSitesToAccessLanguageList.IsChecked) -eq $true) {
+                if ($($window.chktcPreventSitesToAccessLanguageList.IsChecked) -eq $true) {
                     New-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -Value 1 -Force
                     WriteOutput "configured computer to prevent websites to access language list"
                 }
-                If ($($window.chktcDoNotShowFeedbackNotifications.IsChecked) -eq $true) {
+                if ($($window.chktcDoNotShowFeedbackNotifications.IsChecked) -eq $true) {
                     New-Item -Path "HKCU:\Software\Microsoft\Siuf" -Name "Rules" -Force
                     New-ItemProperty -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Name "PeriodInNanoSeconds" -Value 0 -Force
                     New-ItemProperty -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Value 0 -Force
                     WriteOutput "configured computer to hide feedback notifications"
                 }
-                If ($($window.chktcTurnOffWiFiSense.IsChecked) -eq $true) {
+                if ($($window.chktcTurnOffWiFiSense.IsChecked) -eq $true) {
                     $user = New-Object System.Security.Principal.NTAccount($env:UserName)
                     $sid = $user.Translate([System.Security.Principal.SecurityIdentifier]).Value
                     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" -Name "AutoConnectAllowedOEM" -Value 0 -Force
@@ -258,58 +258,58 @@ $window.btnRun.add_Click(
                     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\features\$sid" -Name "FeatureStates" -Value 0x33c -Force
                     WriteOutput "turned off wi-fi sense"
                 }
-                If ($($window.chktcSetTelemetryLevelToSecurity.IsChecked) -eq $true) {
+                if ($($window.chktcSetTelemetryLevelToSecurity.IsChecked) -eq $true) {
                     New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Value 0 -Force
                     WriteOutput "set telemetry level to security (only available on windows 10 enterprise, windows 10 education, windows 10 mobile enterprise and iot core editions )"
                 }
-                If ($($window.chktcDisableDefenderAntimalwareService.IsChecked) -eq $true) {
-                    If ((Test-Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -PathType Container) -eq $false) {
+                if ($($window.chktcDisableDefenderAntimalwareService.IsChecked) -eq $true) {
+                    if ((Test-Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -PathType Container) -eq $false) {
                         New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows Defender" -Name "Spynet" -Force
                     }
                     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -Name "SpyNetReporting" -Value 0 -Force
                     WriteOutput "disabled windows defender antimalware protection service"
                 }
-                If ($($window.chktcDoNotSubmitDefenderSamples.IsChecked) -eq $true) {
-                    If ((Test-Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -PathType Container) -eq $false) {
+                if ($($window.chktcDoNotSubmitDefenderSamples.IsChecked) -eq $true) {
+                    if ((Test-Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -PathType Container) -eq $false) {
                         New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows Defender" -Name "Spynet" -Force
                     }
                     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Value 2 -Force
                     WriteOutput "configured computer to stop sending windows defender file samples to microsoft"
                 }
-                If ($($window.chktcDoNotReportInfectionInformation.IsChecked) -eq $true) {
+                if ($($window.chktcDoNotReportInfectionInformation.IsChecked) -eq $true) {
                     New-Item -Path "HKLM:\Software\Policies\Microsoft" -Name "MRT" -Force
                     New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\MRT" -Name "DontReportInfectionInformation" -Value 1 -Force
                     WriteOutput "configured computer to stop reporting infection information (malicious software reporting tool telemetry)"
                 }
-                If ($($window.chktcClearDiagTrackLog.IsChecked) -eq $true) {
+                if ($($window.chktcClearDiagTrackLog.IsChecked) -eq $true) {
                     $diaglog = "$env:ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl"
-                    If (Test-Path $diaglog -PathType Leaf) {
+                    if (Test-Path $diaglog -PathType Leaf) {
                         Set-Content -Path $diaglog -Value "" -Force
                         WriteOutput "cleared diagtrack log"
-                    } Else {
+                    } else {
                         WriteOutput "diagtrack log not available @ $($diaglog)"
                     }
                 }
-                If ($($window.chktcDisableSyncOfSettings.IsChecked) -eq $true) {
+                if ($($window.chktcDisableSyncOfSettings.IsChecked) -eq $true) {
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" -Name "BackupPolicy" -Value 0x3c -Force
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" -Name "DeviceMetadataUploaded" -Value 0 -Force
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync" -Name "PriorLogons" -Value 1 -Force
                     $grps = @(("Accessibility"),("AppSync"),("BrowserSettings"),("Credentials"),("DesktopTheme"),("Language"),("PackageState"),("Personalization"),("StartLayout"),("Windows"))
-                    ForEach ($grp in $grps) {
+                    foreach ($grp in $grps) {
                         New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SettingSync\Groups\$grp" -Name "Enabled" -Value 0 -Force
                     }
                     WriteOutput "disabled synchronization of settings"
                 }
-                If ($($window.chktcDisableLocationSensor.IsChecked) -eq $true) {
+                if ($($window.chktcDisableLocationSensor.IsChecked) -eq $true) {
                     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Permissions" -Name "{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
                     New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Permissions\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Value 0 -Force
                     WriteOutput "disabled location sensor"
                 }
-                If ($($window.chktcUninstallOneDrive.IsChecked) -eq $true) {
-                    If (Test-Path "$env:SystemRoot\System32\OneDriveSetup.exe") {
+                if ($($window.chktcUninstallOneDrive.IsChecked) -eq $true) {
+                    if (Test-Path "$env:SystemRoot\System32\OneDriveSetup.exe") {
                         & "$env:SystemRoot\System32\OneDriveSetup.exe" /uninstall
                     }
-                    If (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
+                    if (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
                         & "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" /uninstall
                     }
                     $items = @(
@@ -318,7 +318,7 @@ $window.btnRun.add_Click(
                         "$env:USERPROFILE\OneDrive"
                         "$env:SystemDrive\OneDriveTemp"
                     )
-                    ForEach ($item in $items) {
+                    foreach ($item in $items) {
                         Remove-Item -Recurse $item -Force -ErrorAction SilentlyContinue
                     }
                     New-PSDrive -PSProvider Registry -Root "HKEY_CLASSES_ROOT" -Name "HKCR"
@@ -327,7 +327,7 @@ $window.btnRun.add_Click(
                         ("HKCR:\CLSID","{018D5C66-4533-4307-9B53-224DE2ED1FE6}"),
                         ("HKCR:\Wow6432Node\CLSID","{018D5C66-4533-4307-9B53-224DE2ED1FE6}")
                     )
-                    ForEach ($newitem in $newitems) {
+                    foreach ($newitem in $newitems) {
                             New-Item -Path $newitem[0] -Name $newitem[1] -Force
                     }
                     $newitemproperties = @(
@@ -335,7 +335,7 @@ $window.btnRun.add_Click(
                         ("HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}","System.IsPinnedToNameSpaceTree",0),
                         ("HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}","System.IsPinnedToNameSpaceTree",0)
                     )
-                    ForEach ($newitemproperty in $newitemproperties) {
+                    foreach ($newitemproperty in $newitemproperties) {
                         New-ItemProperty -Path $newitemproperty[0] -Name $newitemproperty[1] -Value $newitemproperty[2] -Force
                     }
                     Remove-PSDrive "HKCR"
@@ -343,29 +343,29 @@ $window.btnRun.add_Click(
                     WriteOutput "uninstalled onedrive"
                 }
 				$chkboxes = $window.Content.Children.Name -Like "chktc*"
-                ForEach ($chkbox in $chkboxes) {
-					If ($($window.$chkbox.IsChecked -eq $true)) {
+                foreach ($chkbox in $chkboxes) {
+					if ($($window.$chkbox.IsChecked -eq $true)) {
 						$i++
 					}
                 }
-				If ($i -eq $null) {
+				if ($i -eq $null) {
 					WriteOutput "you have not configured any general telemetry settings to change"
 				}
-            } Else {
+            } else {
                 WriteOutput "you have not configured any general telemetry settings to change"
             }
-            ForEach ($btn in $btns) {
+            foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $true
             }
 			WriteOutput "end, log file created @ $($log)"
             $window.txtOutput.Text | Out-File $log
         }
-        Catch {
+        catch {
             WriteOutput $($_.Exception.Message)
             WriteOutput "end, log file created @ $($log)"
 			$window.txtOutput.Text | Out-File $log
             $btns = $window.Content.Children.Name -Like "btn*"
-            ForEach ($btn in $btns) {
+            foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $true
             }
         }
