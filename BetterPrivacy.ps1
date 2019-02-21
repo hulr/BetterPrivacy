@@ -83,50 +83,50 @@ function LoadDefaultValues {
     foreach ($chkbox in $chkboxes) {
         $window.$chkbox.IsChecked = $false
     }
-	$services = $conf.service
-	$services | ForEach-Object {
-		$window.txtDisableServices.Text += $_
-		$window.txtDisableServices.AppendText("`r`n")
-	}
-	$apps = $conf.app
-	$apps | ForEach-Object {
-		$window.txtRemoveApps.Text += $_
-		$window.txtRemoveApps.AppendText("`r`n")
-	}
-	$domains = $conf.domain
-	$domains | ForEach-Object {
-		$window.txtBlockDomains.Text += $_
-		$window.txtBlockDomains.AppendText("`r`n")
-	}
-	$ips = $conf.ip
-	$ips | ForEach-Object {
-		$window.txtBlockIPs.Text += $_
-		$window.txtBlockIPs.AppendText("`r`n")
-	}
+    $services = $conf.service
+    $services | ForEach-Object {
+        $window.txtDisableServices.Text += $_
+        $window.txtDisableServices.AppendText("`r`n")
+    }
+    $apps = $conf.app
+    $apps | ForEach-Object {
+        $window.txtRemoveApps.Text += $_
+        $window.txtRemoveApps.AppendText("`r`n")
+    }
+    $domains = $conf.domain
+    $domains | ForEach-Object {
+        $window.txtBlockDomains.Text += $_
+        $window.txtBlockDomains.AppendText("`r`n")
+    }
+    $ips = $conf.ip
+    $ips | ForEach-Object {
+        $window.txtBlockIPs.Text += $_
+        $window.txtBlockIPs.AppendText("`r`n")
+    }
 }
 #endregion
 
 #region main
 $window.Add_Loaded(
-	{
-		try {
-			LoadDefaultValues
-		}
-		catch {
-			WriteOutput $($_.Exception.Message)
-		}
-	}
+    {
+        try {
+            LoadDefaultValues
+        }
+        catch {
+            WriteOutput $($_.Exception.Message)
+        }
+    }
 )
 
 $window.btnReset.add_Click(
-	{
-		try {
-			LoadDefaultValues
-		}
-		catch {
-			WriteOutput $($_.Exception.Message)
-		}
-	}
+    {
+        try {
+            LoadDefaultValues
+        }
+        catch {
+            WriteOutput $($_.Exception.Message)
+        }
+    }
 )
 
 $window.chkTelemetry.add_Click(
@@ -158,14 +158,14 @@ $window.btnRun.add_Click(
             foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $false
             }
-			if ([Environment]::OSVersion.Version.Major -ne 10) {
+            if ([Environment]::OSVersion.Version.Major -ne 10) {
                 WriteOutput "your operating system ($((Get-WmiObject -Class Win32_OperatingSystem).Caption)) is not supported"
                 WriteOutput "please take a look at the system requirements stated in the README.md file"
                 throw
-			}
+            }
             if ($($window.chkDisableServices.IsChecked) -eq $true -and $($window.txtDisableServices.Text.Replace("`r`n","")) -ne "") {
-				$services = New-Object System.Collections.ArrayList
-				(($window.txtDisableServices.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $services.Add($_) }
+                $services = New-Object System.Collections.ArrayList
+                (($window.txtDisableServices.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $services.Add($_) }
                 foreach ($service in $services) {
                     $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
                     if ($svc) {
@@ -182,8 +182,8 @@ $window.btnRun.add_Click(
                 WriteOutput "you have not configured any services to disable"
             }
             if ($($window.chkRemoveApps.IsChecked) -eq $true -and $($window.txtRemoveApps.Text.Replace("`r`n","")) -ne "") {
-				$apps = New-Object System.Collections.ArrayList
-				(($window.txtRemoveApps.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $apps.Add($_) }
+                $apps = New-Object System.Collections.ArrayList
+                (($window.txtRemoveApps.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $apps.Add($_) }
                 foreach ($app in $apps) {
                     $a = Get-AppxPackage -Name $app -ErrorAction SilentlyContinue
                     if ($a) {
@@ -198,13 +198,13 @@ $window.btnRun.add_Click(
                 WriteOutput "you have not configured any apps to remove"
             }
             if ($($window.chkBlockDomains.IsChecked) -eq $true -and $($window.txtBlockDomains.Text.Replace("`r`n","")) -ne "") {
-				$domains = New-Object System.Collections.ArrayList
-				(($window.txtBlockDomains.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $domains.Add($_) }
+                $domains = New-Object System.Collections.ArrayList
+                (($window.txtBlockDomains.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $domains.Add($_) }
                 $hosts = "$env:SystemRoot\System32\drivers\etc\hosts"
                 foreach ($domain in $domains) {
-	                if (-Not (Select-String -Path $hosts -Pattern "^0.0.0.0 $($domain)$")) {
-		                Write-Output "0.0.0.0 $domain" | Out-File -Encoding ASCII -Append $hosts
-	                    WriteOutput "blocked domain $($domain)"
+                    if (-Not (Select-String -Path $hosts -Pattern "^0.0.0.0 $($domain)$")) {
+                        Write-Output "0.0.0.0 $domain" | Out-File -Encoding ASCII -Append $hosts
+                        WriteOutput "blocked domain $($domain)"
                     } else {
                         WriteOutput "could not block domain $($domain), already set in hosts file"
                     }
@@ -213,7 +213,7 @@ $window.btnRun.add_Click(
                 WriteOutput "you have not configured any domains to block"
             }
             if ($($window.chkBlockIPs.IsChecked) -eq $true -and $($window.txtBlockIPs.Text.Replace("`r`n","")) -ne "") {
-				$ips = New-Object System.Collections.ArrayList
+                $ips = New-Object System.Collections.ArrayList
                 (($window.txtBlockIPs.Text.Replace("`r`n",",")).Split(",") | Where-Object { $_ -ne "" }) | ForEach-Object { $ips.Add($_) }
                 foreach ($ip in $ips) {
                     Remove-NetFirewallRule -DisplayName "BlockTelemetryIP-$($ip)" -ErrorAction SilentlyContinue
@@ -260,7 +260,7 @@ $window.btnRun.add_Click(
                 }
                 if ($($window.chktcSetTelemetryLevelToSecurity.IsChecked) -eq $true) {
                     New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Value 0 -Force
-                    WriteOutput "set telemetry level to security (only available on windows 10 enterprise, windows 10 education, windows 10 mobile enterprise and iot core editions )"
+                    WriteOutput "set telemetry level to security (only available on windows 10 enterprise, windows 10 education, windows 10 mobile enterprise and iot core editions)"
                 }
                 if ($($window.chktcDisableDefenderAntimalwareService.IsChecked) -eq $true) {
                     if ((Test-Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -PathType Container) -eq $false) {
@@ -342,28 +342,28 @@ $window.btnRun.add_Click(
                     Remove-Item "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.Ink" -Force -ErrorAction SilentlyContinue
                     WriteOutput "uninstalled onedrive"
                 }
-				$chkboxes = $window.Content.Children.Name -Like "chktc*"
+                $chkboxes = $window.Content.Children.Name -Like "chktc*"
                 foreach ($chkbox in $chkboxes) {
-					if ($($window.$chkbox.IsChecked -eq $true)) {
-						$i++
-					}
+                    if ($($window.$chkbox.IsChecked -eq $true)) {
+                        $i++
+                    }
                 }
-				if ($i -eq $null) {
-					WriteOutput "you have not configured any general telemetry settings to change"
-				}
+                if ($i -eq $null) {
+                    WriteOutput "you have not configured any general telemetry settings to change"
+                }
             } else {
                 WriteOutput "you have not configured any general telemetry settings to change"
             }
             foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $true
             }
-			WriteOutput "end, log file created @ $($log)"
+            WriteOutput "end, log file created @ $($log)"
             $window.txtOutput.Text | Out-File $log
         }
         catch {
             WriteOutput $($_.Exception.Message)
             WriteOutput "end, log file created @ $($log)"
-			$window.txtOutput.Text | Out-File $log
+            $window.txtOutput.Text | Out-File $log
             $btns = $window.Content.Children.Name -Like "btn*"
             foreach ($btn in $btns) {
                 $window.$btn.IsEnabled = $true
